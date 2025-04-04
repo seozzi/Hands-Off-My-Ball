@@ -1,0 +1,9 @@
+# environment.yml
+name: snu_graphics
+channels:
+  - defaults
+dependencies:
+  - python>=3.8
+  - pip
+  - pip:
+      - pyglet>=2.1.0
