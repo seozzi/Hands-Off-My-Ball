@@ -3,10 +3,6 @@ import math
 from pyglet.math import Vec3, Vec4, Mat4, Quaternion
 
 class Animation:
-    '''
-    Controls the Animation state for Dribble(Idle/Cross)
-    Moves Character's BodyPart with update()
-    '''
     def __init__(self, character, ball):
         self.character = character
         self.ball = ball
@@ -18,70 +14,78 @@ class Animation:
         self.keyframes = [int(k) for k in self.animations.keys()]
         self.keyframes.sort()
 
-    def update(self, dt):
+        self.ball_keyframes = [0, 6, 12]
+        self.ball_positions = {
+            0: Vec3(-16, -6, 14),
+            6: Vec3(-16, -18, 14),
+            12: Vec3(-16, -6, 14)
+        }
+
+    def update(self, dt, renderer):
         self.time += dt
         t_total = self.time % 0.5  # loop every 0.5 second
-        t = t_total * 24           # frame time in 24fps
+        t = t_total * 24
 
-        # Pick two keyframes to interpolate between
-        for i in range(len(self.keyframes)):
-            kf1 = self.keyframes[i]
-            kf2 = self.keyframes[(i + 1) % len(self.keyframes)]
-
-            if kf1 <= t < kf2 or (kf2 < kf1 and (t >= kf1 or t < kf2)):
-                frame_frac = (t - kf1) / (kf2 - kf1) if kf2 > kf1 else (t + 24 - kf1) / (kf2 + 24 - kf1)
-                pose1 = self.animations[str(kf1)]
-                pose2 = self.animations[str(kf2)]
-
-                for part_name in self.character.parts:
-                    if part_name in pose1 and part_name in pose2:
-                        q1 = Quaternion(*pose1[part_name])  # w, x, y, z
-                        q2 = Quaternion(*pose2[part_name])
-
-                        # Apply quadratic easing based on keyframe ranges
-                        if kf1 <= 6:
-                            # Use ease-in for the first segment (slow start, fast end)
-                            adjusted_frac = frame_frac ** 2
-                        elif kf1 > 6:
-                            # Use ease-out for the second segment (fast start, slow end)
-                            adjusted_frac = 1 - (1 - frame_frac) ** 2
-                        else:
-                            adjusted_frac = frame_frac
-
-                        q_interp = slerp(q1, q2, adjusted_frac)
-                        self.character.parts[part_name].rotation = q_interp
-
-    def adjust_foot_to_ground(self, side):
-        hip = self.character.root
-        thigh = self.character.parts[f"{side}_Thigh"]
-        leg = self.character.parts[f"{side}_Leg"]
-        foot = self.character.parts[f"{side}_Foot"]
-
-        world_rot = hip.get_transform() @ thigh.get_transform() @ leg.get_transform()
-        local_y = Vec4(0, 1, 0, 0)
-        world_y4 = world_rot @ local_y
-        world_y3 = Vec3(world_y4.x, world_y4.y, world_y4.z)
-        up = Vec3(0, 1, 0)
-
-        axis = world_y3.cross(up)
-        if axis.length() > 1e-6:
-            angle_cos = world_y3.normalize().dot(up)
-            angle = math.acos(angle_cos)
-            correction_quat = quaternion_from_axis_angle(axis, angle)
-            foot.rotation = correction_quat @ foot.rotation
+        frame_idx = round(t) % 13
+        self.update_character_transformation(renderer, frame_idx)
+        self.update_ball_transformation(renderer, frame_idx)
 
 
-    def update_parts_transformation(self, renderer):
+    def update_character_transformation(self, renderer, frame_idx):
+        pose = self.animations[str(frame_idx)]
+
+        for part_name, part in self.character.parts.items():
+            if part_name in pose:
+                part.rotation = Quaternion(*pose[part_name])
+
         self._update_part(self.character.root, renderer)
+
+
+    def update_ball_transformation(self, renderer, frame_idx):
+        '''
+        Ball: 0, 6, 12 사이 interpolation
+        '''
+        if frame_idx in self.ball_positions:
+            interp_mat = Mat4.from_translation(self.ball_positions[frame_idx])
+        else:
+            for i in range(len(self.ball_keyframes)):
+                kf1 = self.ball_keyframes[i]
+                kf2 = self.ball_keyframes[(i + 1) % len(self.ball_keyframes)]
+
+                # frame_idx가 두 키프레임 사이에 있다면
+                if kf1 < frame_idx < kf2 or (kf2 < kf1 and (frame_idx > kf1 or frame_idx < kf2)):
+                    total = (kf2 - kf1) if kf2 > kf1 else (kf2 + 12 - kf1)
+                    delta = (frame_idx - kf1) if frame_idx > kf1 else (frame_idx + 12 - kf1)
+                    frac = delta / total
+
+                    # ease-in / out
+                    if kf1 == 0:
+                        adjusted_frac = frac ** 2
+                    elif kf1 == 6:
+                        adjusted_frac = 1 - (1 - frac) ** 2
+                    else:
+                        adjusted_frac = frac
+
+                    p1 = self.ball_positions[kf1]
+                    p2 = self.ball_positions[kf2]
+                    interp = p1 * (1 - adjusted_frac) + p2 * adjusted_frac
+                    interp_mat = Mat4.from_translation(interp)
+                    break
+            else:
+                interp_mat = Mat4()  # fallback identity
+
+        self.ball.update_transform(interp_mat)
+
+        for shape in renderer.shapes:
+            if shape.name == "Ball":
+                shape.update_transform(self.ball.get_transform())
+                break
+
+
 
     def _update_part(self, part, renderer, parent_matrix=None):
         if parent_matrix is None:
             parent_matrix = Mat4()
-
-        # if part.name == "Left_Foot":
-        #     self.adjust_foot_to_ground("Left")
-        # elif part.name == "Right_Foot":
-        #     self.adjust_foot_to_ground("Right")
 
         world_matrix = part.get_transform(parent_matrix)
 
@@ -101,10 +105,10 @@ def quaternion_from_axis_angle(axis: Vec3, angle_rad: float) -> Quaternion:
     sin_half = math.sin(half_angle)
     cos_half = math.cos(half_angle)
     return Quaternion(
-        cos_half,                      # w
-        axis.x * sin_half,            # x
-        axis.y * sin_half,            # y
-        axis.z * sin_half             # z
+        cos_half,
+        axis.x * sin_half,
+        axis.y * sin_half,
+        axis.z * sin_half
     )
 
 def slerp(q1: Quaternion, q2: Quaternion, t: float) -> Quaternion:

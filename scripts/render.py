@@ -1,8 +1,4 @@
 import pyglet
-# from pyglet import window, app, shapes
-# from pyglet.window import mouse,key
-
-# from pyglet.graphics.shader import Shader, ShaderProgram
 from pyglet.gl import GL_TRIANGLES
 from pyglet.math import Mat4, Vec3
 from pyglet.gl import *
@@ -21,7 +17,7 @@ class RenderWindow(pyglet.window.Window):
         '''
         View (camera) parameters
         '''
-        self.cam_eye = Vec3(0,0, 50)
+        self.cam_eye = Vec3(0, 0, 50)
 
 
         self.cam_target = Vec3(0,0,0)
@@ -66,9 +62,7 @@ class RenderWindow(pyglet.window.Window):
 
 
     def update(self, dt):
-        self.animation.update(dt)
-        self.animation.update_parts_transformation(self)
-
+        self.animation.update(dt, self)
 
     def on_resize(self, width, height):
         glViewport(0, 0, *self.get_framebuffer_size())

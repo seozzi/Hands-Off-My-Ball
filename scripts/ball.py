@@ -14,9 +14,8 @@ class Ball:
             color_map = json.load(f)
 
         self.name = "Ball"
-        # for animation
-        self.rotation = Quaternion()  # identity quaternion
-        self.offset = Vec3(-15.0, 0.0, 0.0)
+        self.rotation = Quaternion()
+        self.transform_mat = Mat4()  # now used instead of offset
 
         self.vertices = []
         self.indices = []
@@ -40,11 +39,13 @@ class Ball:
             self.vertices.extend(transformed_vertices)
             self.colors.extend(cube.colors)
             self.indices.extend([i + vertex_offset for i in cube.indices])
-
             vertex_offset += len(cube.vertices) // 3
 
     def get_transform(self):
-        return Mat4.from_translation(self.offset)
+        return self.transform_mat
+
+    def update_transform(self, new_mat: Mat4):
+        self.transform_mat = new_mat
 
     def add_part(self, renderer):
         renderer.add_custom_shape(self, self.get_transform(), self.vertices, self.indices, self.colors)

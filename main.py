@@ -22,6 +22,6 @@ if __name__ == '__main__':
     controller = Control(renderer)
 
     character.add_parts(renderer)
-    # ball.add_part(renderer)
+    ball.add_part(renderer)
 
     renderer.run()

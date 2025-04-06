@@ -2,7 +2,6 @@ import json
 import os
 from pyglet.math import Vec3, Quaternion, Mat4
 from scripts.primitives import Cube
-import math
 
 class BodyPart:
     '''
@@ -20,11 +19,11 @@ class BodyPart:
         self.name = name
         self.children = []
 
-        # for animation
+        # for armature placement
         self.joint_to_parent = Vec3(*joint_data['joint_to_parent'])
         self.joint_from_parent = Vec3(*joint_data['joint_from_parent'])
 
-        self.rotation = Quaternion()  # identity quaternion
+        self.rotation = Quaternion()
         self.offset = Vec3(0.0, 0.0, 0.0)
 
         self.vertices = []
@@ -61,9 +60,6 @@ class BodyPart:
 
         # 3. 회전만 적용 (쿼터니언 -> 4x4 행렬)
         R = self.rotation.to_mat4()
-
-        if self.name == "Belly":
-            print(self.rotation)
 
         # 4. 로컬 변환 행렬 = 부모 joint 이동 → 회전 → 자식 joint 기준 역이동
         return parent_matrix @ T_from @ R @ T_to
