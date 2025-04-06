@@ -25,7 +25,6 @@ class Animation:
         self.time += dt
         t_total = self.time % 0.5  # loop every 0.5 second
         t = t_total * 24
-
         frame_idx = round(t) % 13
         self.update_character_transformation(renderer, frame_idx)
         self.update_ball_transformation(renderer, frame_idx)
