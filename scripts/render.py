@@ -17,7 +17,7 @@ class RenderWindow(pyglet.window.Window):
         '''
         View (camera) parameters
         '''
-        self.cam_eye = Vec3(0, 0, 50)
+        self.cam_eye = Vec3(0, 0, 100)
 
 
         self.cam_target = Vec3(0,0,0)

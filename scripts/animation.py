@@ -2,6 +2,13 @@ import json
 import math
 from pyglet.math import Vec3, Vec4, Mat4, Quaternion
 
+class AnimationName:
+    Idle_R = "Idle_R"
+    Idle_L = "Idle_L"
+    Cross_LtoR = "Cross_LtoR"
+    Cross_RtoL = "Cross_RtoL"
+
+
 class Animation:
     def __init__(self, character, ball):
         self.character = character
@@ -9,7 +16,10 @@ class Animation:
         self.time = 0.0
 
         with open("scripts/pose_data/pose_config.json") as f:
-            self.animations = json.load(f)
+            all_animations = json.load(f)
+
+        self.anim_name = "Idle_R"
+        self.animations = all_animations[self.anim_name]
 
         self.keyframes = [int(k) for k in self.animations.keys()]
         self.keyframes.sort()
@@ -23,7 +33,7 @@ class Animation:
 
     def update(self, dt, renderer):
         self.time += dt
-        t_total = self.time % 0.5  # loop every 0.5 second
+        t_total = self.time % (1/3)
         t = t_total * 24
         frame_idx = round(t) % 13
         self.update_character_transformation(renderer, frame_idx)
