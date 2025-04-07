@@ -42,7 +42,8 @@ class Ball:
             vertex_offset += len(cube.vertices) // 3
 
     def get_transform(self):
-        return self.transform_mat
+        scale_mat = Mat4.from_scale(Vec3(0.7, 0.7, 0.7))
+        return self.transform_mat@scale_mat
 
     def update_transform(self, new_mat: Mat4):
         self.transform_mat = new_mat
