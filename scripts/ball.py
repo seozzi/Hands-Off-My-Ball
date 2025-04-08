@@ -41,9 +41,26 @@ class Ball:
             self.indices.extend([i + vertex_offset for i in cube.indices])
             vertex_offset += len(cube.vertices) // 3
 
+        self.set_origin_to_center()
+        self.change_ball_size(scale= 0.7)
+
+    def change_ball_size(self, scale):
+        # Ball 전체 크기 0.7배로 줄이기
+        for i in range(0, len(self.vertices), 3):
+            self.vertices[i] *= 0.7
+            self.vertices[i+1] *= 0.7
+            self.vertices[i+2] *= 0.7
+
+    def set_origin_to_center(self):
+        center = Vec3(4.5, 4.5, 4.5)
+
+        for i in range(0, len(self.vertices), 3):
+            self.vertices[i] -= center.x
+            self.vertices[i + 1] -= center.y
+            self.vertices[i + 2] -= center.z
+
     def get_transform(self):
-        scale_mat = Mat4.from_scale(Vec3(0.7, 0.7, 0.7))
-        return self.transform_mat@scale_mat
+        return self.transform_mat
 
     def update_transform(self, new_mat: Mat4):
         self.transform_mat = new_mat

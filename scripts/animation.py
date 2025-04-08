@@ -15,21 +15,19 @@ class Animation:
         self.ball = ball
         self.time = 0.0
 
-        with open("scripts/pose_data/pose_config.json") as f:
-            all_animations = json.load(f)
+        with open("scripts/pose_data/character_animation_config.json") as f:
+            character_animations = json.load(f)
+
+        with open("scripts/pose_data/ball_animation_config.json") as f:
+            ball_animations = json.load(f)
 
         self.anim_name = "Idle_R"
-        self.animations = all_animations[self.anim_name]
+        self.character_animation = character_animations[self.anim_name]
+        self.ball_animation = ball_animations[self.anim_name]
 
-        self.keyframes = [int(k) for k in self.animations.keys()]
+        self.keyframes = [int(k) for k in self.character_animation.keys()]
         self.keyframes.sort()
 
-        self.ball_keyframes = [0, 6, 12]
-        self.ball_positions = {
-            0: Vec3(-16, -6, 14),
-            6: Vec3(-16, -18, 14),
-            12: Vec3(-16, -6, 14)
-        }
 
     def update(self, dt, renderer):
         self.time += dt
@@ -41,58 +39,31 @@ class Animation:
 
 
     def update_character_transformation(self, renderer, frame_idx):
-        pose = self.animations[str(frame_idx)]
+        frame = self.character_animation[str(frame_idx)]
 
         for part_name, part in self.character.parts.items():
-            if part_name in pose:
-                part.rotation = Quaternion(*pose[part_name])
+            if part_name in frame:
+                part.rotation = Quaternion(*frame[part_name])
 
-        self._update_part(self.character.root, renderer)
+        self._update_body_part(self.character.root, renderer)
 
 
     def update_ball_transformation(self, renderer, frame_idx):
-        '''
-        Ball: 0, 6, 12 사이 interpolation
-        '''
-        if frame_idx in self.ball_positions:
-            interp_mat = Mat4.from_translation(self.ball_positions[frame_idx])
-        else:
-            for i in range(len(self.ball_keyframes)):
-                kf1 = self.ball_keyframes[i]
-                kf2 = self.ball_keyframes[(i + 1) % len(self.ball_keyframes)]
+        frame = self.ball_animation[str(frame_idx)]
+        
+        location = Vec3(*frame["location"])
+        rotation = Quaternion(*frame["rotation"])
 
-                # frame_idx가 두 키프레임 사이에 있다면
-                if kf1 < frame_idx < kf2 or (kf2 < kf1 and (frame_idx > kf1 or frame_idx < kf2)):
-                    total = (kf2 - kf1) if kf2 > kf1 else (kf2 + 12 - kf1)
-                    delta = (frame_idx - kf1) if frame_idx > kf1 else (frame_idx + 12 - kf1)
-                    frac = delta / total
-
-                    # ease-in / out
-                    if kf1 == 0:
-                        adjusted_frac = frac ** 2
-                    elif kf1 == 6:
-                        adjusted_frac = 1 - (1 - frac) ** 2
-                    else:
-                        adjusted_frac = frac
-
-                    p1 = self.ball_positions[kf1]
-                    p2 = self.ball_positions[kf2]
-                    interp = p1 * (1 - adjusted_frac) + p2 * adjusted_frac
-                    interp_mat = Mat4.from_translation(interp)
-                    break
-            else:
-                interp_mat = Mat4()  # fallback identity
-
-        self.ball.update_transform(interp_mat)
+        transform = Mat4.from_translation(location) @ rotation.to_mat4()
+        self.ball.update_transform(transform)
 
         for shape in renderer.shapes:
             if shape.name == "Ball":
-                shape.update_transform(self.ball.get_transform())
+                shape.update_transform(transform)
                 break
 
 
-
-    def _update_part(self, part, renderer, parent_matrix=None):
+    def _update_body_part(self, part, renderer, parent_matrix=None):
         if parent_matrix is None:
             parent_matrix = Mat4()
 
@@ -104,7 +75,7 @@ class Animation:
                 break
 
         for child in part.children:
-            self._update_part(child, renderer, world_matrix)
+            self._update_body_part(child, renderer, world_matrix)
 
 # === Utility functions ===
 
