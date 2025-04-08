@@ -15,7 +15,7 @@ class Ball:
 
         self.name = "Ball"
         self.rotation = Quaternion()
-        self.transform_mat = Mat4()  # now used instead of offset
+        self.transform_mat = Mat4()
 
         self.vertices = []
         self.indices = []
@@ -42,14 +42,14 @@ class Ball:
             vertex_offset += len(cube.vertices) // 3
 
         self.set_origin_to_center()
-        self.change_ball_size(scale= 0.7)
+        self.scale_ball(scale= 0.7)
 
-    def change_ball_size(self, scale):
-        # Ball 전체 크기 0.7배로 줄이기
+    def scale_ball(self, scale):
+        # Ball 전체 크기 scale(0.7)배로 줄이기
         for i in range(0, len(self.vertices), 3):
-            self.vertices[i] *= 0.7
-            self.vertices[i+1] *= 0.7
-            self.vertices[i+2] *= 0.7
+            self.vertices[i] *= scale
+            self.vertices[i+1] *= scale
+            self.vertices[i+2] *= scale
 
     def set_origin_to_center(self):
         center = Vec3(4.5, 4.5, 4.5)

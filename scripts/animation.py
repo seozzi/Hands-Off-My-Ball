@@ -10,30 +10,34 @@ class AnimationName:
 
 
 class Animation:
-    def __init__(self, character, ball):
+    def __init__(self, character, ball, manager):
         self.character = character
         self.ball = ball
-        self.time = 0.0
+        self.manager = manager
 
         with open("scripts/pose_data/character_animation_config.json") as f:
-            character_animations = json.load(f)
+            self.character_animations = json.load(f)
 
         with open("scripts/pose_data/ball_animation_config.json") as f:
-            ball_animations = json.load(f)
+            self.ball_animations = json.load(f)
+        
+        self.time = 0.0
+        self.anim_name = manager.get_current_animation_name()
 
-        self.anim_name = "Idle_R"
-        self.character_animation = character_animations[self.anim_name]
-        self.ball_animation = ball_animations[self.anim_name]
+        self._load_animation_data(self.anim_name)
+
+    def _load_animation_data(self, name):
+        self.character_animation = self.character_animations[name]
+        self.ball_animation = self.ball_animations[name]
 
         self.keyframes = [int(k) for k in self.character_animation.keys()]
         self.keyframes.sort()
-
 
     def update(self, dt, renderer):
         self.time += dt
         t_total = self.time % (1/3)
         t = t_total * 24
-        frame_idx = round(t) % 13
+        frame_idx = round(t) % len(self.keyframes)
         self.update_character_transformation(renderer, frame_idx)
         self.update_ball_transformation(renderer, frame_idx)
 
