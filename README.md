@@ -4,9 +4,9 @@
 
 _This lil' baller keeps dodging your hand 👋_
 
-![hover preview](media/result.gif)
-
----
+<p align = "center">
+<img src = "https://github.com/user-attachments/assets/c92fcd29-4401-44c0-9ce5-912ba89b9483">
+</p>
 
 ### How it’s made
 
