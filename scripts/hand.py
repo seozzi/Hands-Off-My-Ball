@@ -1,6 +1,7 @@
 from pyglet.math import Vec3, Vec4, Quaternion, Mat4
-import json, os
+import json
 from scripts.primitives import Cube
+from scripts.animation import AnimationName
 
 class Hand:
     def __init__(self, hand_name: str, animation_manager):
@@ -21,6 +22,11 @@ class Hand:
         self.colors = []
 
         vertex_offset = 0
+
+        # animation related
+        self.is_animation_ongoing = False
+        self.time = 0.0
+        self.keyframes = []
 
         # === base pose transform 설정 ===
         if hand_name == "Right_Hand_P":
@@ -52,6 +58,41 @@ class Hand:
         self.set_origin_to_center()
         self.scale_hand(3)
 
+    def _load_animation_data(self, name):
+        self.current_hand_anim = self.hand_animations[name]
+        self.keyframes = sorted(int(k) for k in self.current_hand_anim.keys())
+        self.time = 0.0
+        
+    def update(self, dt, renderer):
+        if not self.is_animation_ongoing:
+            return
+
+        self.time += dt
+        t_total = self.time % (1/6)
+        t = t_total * 24
+        frame_idx = round(t) % len(self.keyframes)
+
+        # 애니메이션 마지막 프레임에서 종료 처리
+        if frame_idx == len(self.keyframes) - 1:
+            self.is_animation_ongoing = False
+            self.time = 0.0
+
+        self.update_hand_transformation(renderer, frame_idx)
+
+    def update_hand_transformation(self, renderer, frame_idx):
+        frame = self.current_hand_anim[str(frame_idx)]
+        
+        location = Vec3(*frame["location"])
+        rotation = Quaternion(*frame["rotation"])
+
+        transform = Mat4.from_translation(location) @ rotation.to_mat4()
+
+        for shape in renderer.shapes:
+            if shape.name == self.name:
+                shape.update_transform(transform)
+                break
+
+
     def scale_hand(self, scale):
         for i in range(0, len(self.vertices), 3):
             self.vertices[i] *= scale
@@ -65,14 +106,9 @@ class Hand:
             self.vertices[i+1] -= center.y
             self.vertices[i+2] -= center.z
 
-    def get_transform(self):
-        return self.transform_mat
-
-    def update_transform(self, new_mat: Mat4):
-        self.transform_mat = new_mat
 
     def add_part(self, renderer):
-        renderer.add_custom_shape(self, self.get_transform(), self.vertices, self.indices, self.colors)
+        renderer.add_custom_shape(self, self.transform_mat, self.vertices, self.indices, self.colors)
 
     def bind_window(self, renderer):
         self.window = renderer
@@ -136,16 +172,34 @@ class Hand:
 
     def on_mouse_motion(self, x, y, dx, dy):
         if self.is_screen_hovered(x, y):
-            if self.name == "Right_Hand_P":
-                self.animation_manager.trigger_hover_on_right()
-            else :
-                self.animation_manager.trigger_hover_on_left()
+            self.move_hand()
                     
 
     def is_screen_hovered(self, x, y):
         min_x, min_y = self.screen_bounds["min"]
         max_x, max_y = self.screen_bounds["max"]
         return min_x <= x <= max_x and min_y <= y <= max_y
+    
+    def move_hand(self):
+        if self.name == "Right_Hand_P":
+            self.move_right_hand()
+        else:
+            self.move_left_hand()
+            
+    def move_right_hand(self):
+        if self.is_animation_ongoing: return
+        self._load_animation_data("Right_Hand_P_hover")
+        self.is_animation_ongoing = True
+
+        self.animation_manager.trigger_hover_on_right()
+
+    def move_left_hand(self):
+        if self.is_animation_ongoing: return
+        self._load_animation_data("Left_Hand_P_hover")
+        self.is_animation_ongoing = True
+
+        self.animation_manager.trigger_hover_on_left()
+
     
     def recalculate_screen_bounds(self):
         self._init_screen_bounds()

@@ -65,6 +65,10 @@ class RenderWindow(pyglet.window.Window):
 
     def update(self, dt):
         self.animation.update(dt, self)
+        for part in self.interactive_parts: # right_hand, left_hand
+            if hasattr(part, "update"):
+                part.update(dt, self)
+
 
     def on_resize(self, width, height):
         glViewport(0, 0, *self.get_framebuffer_size())

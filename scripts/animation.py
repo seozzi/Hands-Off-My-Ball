@@ -1,6 +1,5 @@
 import json
-import math
-from pyglet.math import Vec3, Vec4, Mat4, Quaternion
+from pyglet.math import Vec3, Mat4, Quaternion
 
 class AnimationName:
     Idle_R = "Idle_R"
@@ -67,7 +66,6 @@ class Animation:
         rotation = Quaternion(*frame["rotation"])
 
         transform = Mat4.from_translation(location) @ rotation.to_mat4()
-        self.ball.update_transform(transform)
 
         for shape in renderer.shapes:
             if shape.name == "Ball":
@@ -89,42 +87,3 @@ class Animation:
         for child in part.children:
             self._update_body_part(child, renderer, world_matrix)
 
-# === Utility functions ===
-
-def quaternion_from_axis_angle(axis: Vec3, angle_rad: float) -> Quaternion:
-    axis = axis.normalize()
-    half_angle = angle_rad / 2
-    sin_half = math.sin(half_angle)
-    cos_half = math.cos(half_angle)
-    return Quaternion(
-        cos_half,
-        axis.x * sin_half,
-        axis.y * sin_half,
-        axis.z * sin_half
-    )
-
-def slerp(q1: Quaternion, q2: Quaternion, t: float) -> Quaternion:
-    dot = q1.w*q2.w + q1.x*q2.x + q1.y*q2.y + q1.z*q2.z
-    if dot > 0.9995: # 너무 가까울 경우 ㅣinear interpolation
-        result = Quaternion(
-            q1.w + t*(q2.w - q1.w),
-            q1.x + t*(q2.x - q1.x),
-            q1.y + t*(q2.y - q1.y),
-            q1.z + t*(q2.z - q1.z)
-        )
-        return result.normalize()
-
-    theta_0 = math.acos(dot)
-    sin_theta_0 = math.sin(theta_0)
-    theta = theta_0 * t
-    sin_theta = math.sin(theta)
-
-    s0 = math.cos(theta) - dot * sin_theta / sin_theta_0
-    s1 = sin_theta / sin_theta_0
-
-    return Quaternion(
-        (q1.w * s0) + (q2.w * s1),
-        (q1.x * s0) + (q2.x * s1),
-        (q1.y * s0) + (q2.y * s1),
-        (q1.z * s0) + (q2.z * s1)
-    )

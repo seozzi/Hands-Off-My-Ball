@@ -6,15 +6,11 @@ class AnimationManager:
         self.next_anim_name = self.current_anim_name
 
     def trigger_hover_on_right(self):
-        print(f"🖐 Hovering over Right_Hand_P!")
-
         """Triggered when mouse hovers over right hand."""
         if self.current_anim_name == AnimationName.Idle_L and self.next_anim_name != AnimationName.Cross_LtoR:
             self.set_next_animation(AnimationName.Cross_LtoR)
 
     def trigger_hover_on_left(self):
-        print(f"🖐 Hovering over Left_Hand_P!")
-
         """Triggered when mouse hovers over left hand."""
         if self.current_anim_name == AnimationName.Idle_R and self.next_anim_name != AnimationName.Cross_RtoL:
             self.set_next_animation(AnimationName.Cross_RtoL)
@@ -30,5 +26,4 @@ class AnimationManager:
         elif self.current_anim_name == AnimationName.Cross_LtoR:
             self.next_anim_name = AnimationName.Idle_R
 
-        print(f"다음거 불려가는 거 -> {self.current_anim_name}")
         return self.current_anim_name

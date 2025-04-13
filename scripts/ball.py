@@ -59,11 +59,5 @@ class Ball:
             self.vertices[i + 1] -= center.y
             self.vertices[i + 2] -= center.z
 
-    def get_transform(self):
-        return self.transform_mat
-
-    def update_transform(self, new_mat: Mat4):
-        self.transform_mat = new_mat
-
     def add_part(self, renderer):
-        renderer.add_custom_shape(self, self.get_transform(), self.vertices, self.indices, self.colors)
+        renderer.add_custom_shape(self, Mat4(), self.vertices, self.indices, self.colors)
