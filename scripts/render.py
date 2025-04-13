@@ -35,6 +35,8 @@ class RenderWindow(pyglet.window.Window):
         self.setup()
 
         self.animation = animation
+        self.interactive_parts = []
+
 
     def setup(self) -> None:
         self.set_minimum_size(width = 400, height = 300)
@@ -67,8 +69,15 @@ class RenderWindow(pyglet.window.Window):
     def on_resize(self, width, height):
         glViewport(0, 0, *self.get_framebuffer_size())
         self.proj_mat = Mat4.perspective_projection(
-            aspect = width/height, z_near=self.z_near, z_far=self.z_far, fov = self.fov)
-        return pyglet.event.EVENT_HANDLED
+            aspect = width/height,
+            z_near=self.z_near,
+            z_far=self.z_far,
+            fov = self.fov
+        )
+
+        for part in self.interactive_parts: # right_hand, left_hand
+            part.recalculate_screen_bounds()
+            return pyglet.event.EVENT_HANDLED
 
 
     def add_custom_shape(self, part, transform, vertice, indice, color):

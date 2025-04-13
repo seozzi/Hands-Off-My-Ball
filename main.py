@@ -1,5 +1,4 @@
 from scripts.render import RenderWindow
-from scripts.control import Control
 from scripts.animation import Animation
 from scripts.character import Character
 from scripts.ball import Ball
@@ -22,11 +21,12 @@ if __name__ == '__main__':
     renderer = RenderWindow(animation, width, height, "Hands Off My Ball", resizable = True)   
     renderer.set_location(100, 100)
 
-    controller = Control(renderer)
-
     character.add_parts(renderer)
     ball.add_part(renderer)
     right_hand.add_part(renderer)
     left_hand.add_part(renderer)
+
+    right_hand.bind_window(renderer)
+    left_hand.bind_window(renderer)
 
     renderer.run()
