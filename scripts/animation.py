@@ -38,6 +38,14 @@ class Animation:
         t_total = self.time % (1/3)
         t = t_total * 24
         frame_idx = round(t) % len(self.keyframes)
+
+        # loop 한 사이클 끝난 시점이면 animation name 갱신
+        if frame_idx == 0:
+            new_anim = self.manager.get_current_animation_name()
+            if new_anim != self.anim_name:
+                self.anim_name = new_anim
+                self._load_animation_data(self.anim_name)
+
         self.update_character_transformation(renderer, frame_idx)
         self.update_ball_transformation(renderer, frame_idx)
 
