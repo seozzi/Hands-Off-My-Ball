@@ -12,11 +12,15 @@ _This lil' baller keeps dodging your hand 👋_
 
 - Built voxel characters in **MagicaVoxel**, exported as `.obj`
 - Imported to **Blender** for animation (13-frame hover cycle)
-  [image](media/blender_insert_keyframe.png)
+
+  ![image](media/blender.png)
+
 - Exported position & quaternion rotation for each frame
 - Reconstructed characters in **Pyglet** using custom `body_objects.json`
 - Assembled parts via cubes in `CustomGroup` (BodyPart, Ball, Hand)
-  [image](media/T_pose.png)
+
+  ![image](media/T_pose.png)
+
 - Played animations with quaternions
 - Used `AnimationManager` to switch states on mouse hover
 
