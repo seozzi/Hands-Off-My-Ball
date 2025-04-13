@@ -9,12 +9,13 @@ if __name__ == '__main__':
     width = 1920
     height = 1080
 
+    manager = AnimationManager()
+
     character = Character()
     ball = Ball()
-    right_hand = Hand("Right_Hand_P")
-    left_hand = Hand("Left_Hand_P")
+    right_hand = Hand("Right_Hand_P", manager)
+    left_hand = Hand("Left_Hand_P", manager)
     
-    manager = AnimationManager()
     animation = Animation(character, ball, manager)
 
     # Render window.

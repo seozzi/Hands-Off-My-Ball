@@ -3,7 +3,7 @@ import json, os
 from scripts.primitives import Cube
 
 class Hand:
-    def __init__(self, hand_name: str):
+    def __init__(self, hand_name: str, animation_manager):
         with open("scripts/pose_data/body_objects.json") as f:
             data = json.load(f)
         with open("scripts/pose_data/colors.json") as f:
@@ -12,6 +12,7 @@ class Hand:
             self.hand_animations = json.load(f)
 
         self.name = hand_name
+        self.animation_manager = animation_manager
         self.rotation = Quaternion()
         self.transform_mat = Mat4()
 
@@ -132,13 +133,14 @@ class Hand:
             "max": (max(xs), max(ys))
         }
 
-        print(f"✅ {self.name} screen bounds initialized: {self.screen_bounds}")
-
 
     def on_mouse_motion(self, x, y, dx, dy):
         if self.is_screen_hovered(x, y):
-                print(f"🖐 Hovering over {self.name}!")
-                # self.trigger_hover_animation()
+            if self.name == "Right_Hand_P":
+                self.animation_manager.trigger_hover_on_right()
+            else :
+                self.animation_manager.trigger_hover_on_left()
+                    
 
     def is_screen_hovered(self, x, y):
         min_x, min_y = self.screen_bounds["min"]

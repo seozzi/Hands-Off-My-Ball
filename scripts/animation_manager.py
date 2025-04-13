@@ -1,5 +1,4 @@
-import json
-from scripts.animation import Animation, AnimationName
+from scripts.animation import AnimationName
 
 class AnimationManager:
     def __init__(self):
@@ -7,23 +6,21 @@ class AnimationManager:
         self.next_anim_name = self.current_anim_name
 
     def trigger_hover_on_right(self):
+        print(f"🖐 Hovering over Right_Hand_P!")
+
         """Triggered when mouse hovers over right hand."""
-        if self.current_anim_name == AnimationName.Idle_R:
-            self.set_next_animation(AnimationName.Cross_RtoL)
-        elif self.current_anim_name == AnimationName.Idle_L:
+        if self.current_anim_name == AnimationName.Idle_L and self.next_anim_name != AnimationName.Cross_LtoR:
             self.set_next_animation(AnimationName.Cross_LtoR)
 
     def trigger_hover_on_left(self):
+        print(f"🖐 Hovering over Left_Hand_P!")
+
         """Triggered when mouse hovers over left hand."""
-        if self.current_anim_name == AnimationName.Idle_R:
+        if self.current_anim_name == AnimationName.Idle_R and self.next_anim_name != AnimationName.Cross_RtoL:
             self.set_next_animation(AnimationName.Cross_RtoL)
-        elif self.current_anim_name == AnimationName.Idle_L:
-            self.set_next_animation(AnimationName.Cross_LtoR)
 
     def set_next_animation(self, anim_name):
-        if anim_name != self.current_anim_name:
-            self.next_anim_name = anim_name
-
+        self.next_anim_name = anim_name
 
     def get_current_animation_name(self):
         self.current_anim_name = self.next_anim_name
@@ -33,4 +30,5 @@ class AnimationManager:
         elif self.current_anim_name == AnimationName.Cross_LtoR:
             self.next_anim_name = AnimationName.Idle_R
 
+        print(f"다음거 불려가는 거 -> {self.current_anim_name}")
         return self.current_anim_name
