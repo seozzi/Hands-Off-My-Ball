@@ -37,7 +37,7 @@ class Hand:
             base_pose = self.hand_animations["base_pose"]["Left_Hand_P"]
 
         location = Vec3(*base_pose["location"])
-        rotation = Quaternion(*base_pose["rotation"])
+        rotation =  Quaternion(*base_pose["rotation"])
         self.transform_mat = Mat4.from_translation(location) @ rotation.to_mat4()
 
         # === vertex setup ===
@@ -68,7 +68,7 @@ class Hand:
             return
 
         self.time += dt
-        t_total = self.time % (1/6)
+        t_total = self.time % (1/2)
         t = t_total * 24
         frame_idx = round(t) % len(self.keyframes)
 
@@ -92,19 +92,18 @@ class Hand:
                 shape.update_transform(transform)
                 break
 
-
-    def scale_hand(self, scale):
-        for i in range(0, len(self.vertices), 3):
-            self.vertices[i] *= scale
-            self.vertices[i+1] *= scale
-            self.vertices[i+2] *= scale
-
     def set_origin_to_center(self):
         center = Vec3(2.5, 1.5, 2.5)
         for i in range(0, len(self.vertices), 3):
             self.vertices[i] -= center.x
             self.vertices[i+1] -= center.y
             self.vertices[i+2] -= center.z
+
+    def scale_hand(self, scale):
+        for i in range(0, len(self.vertices), 3):
+            self.vertices[i] *= scale
+            self.vertices[i+1] *= scale
+            self.vertices[i+2] *= scale
 
 
     def add_part(self, renderer):
